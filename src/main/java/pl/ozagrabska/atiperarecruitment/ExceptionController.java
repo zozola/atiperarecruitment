@@ -23,4 +23,16 @@ public class ExceptionController {
 	    return new ResponseEntity<AtiperaError>(response, headers, HttpStatus.NOT_ACCEPTABLE);
     }
 
+    @ExceptionHandler(GitHubUserNotFoundException.class)
+    public ResponseEntity<AtiperaError> handleUserNotFoundException() {
+        AtiperaError response = new AtiperaError();
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        response.setMessage("github user not found");
+        response.setStatus(404);
+
+        return new ResponseEntity<AtiperaError>(response, headers, HttpStatus.NOT_ACCEPTABLE);
+    }
+
 }

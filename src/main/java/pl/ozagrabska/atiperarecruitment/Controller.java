@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
 
@@ -25,8 +26,13 @@ public class Controller {
     public List<ResultData> getRepositories(@PathVariable String user) {
         String url = String.format("https://api.github.com/users/%s/repos", user);
         RestTemplate restTemplate = new RestTemplate();
+	GitHubRepo[] repositories;
 
-        GitHubRepo[] repositories = restTemplate.getForObject(url, GitHubRepo[].class);
+	try {
+        	repositories = restTemplate.getForObject(url, GitHubRepo[].class);
+	} catch(HttpClientErrorException exception) {
+		throw new GitHubUserNotFoundException();
+        }
 
 	ArrayList<ResultData> result = new ArrayList<ResultData>();
 
