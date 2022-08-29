@@ -31,6 +31,10 @@ public class Controller {
 	ArrayList<ResultData> result = new ArrayList<ResultData>();
 
 	for (GitHubRepo repo : repositories) {
+	    if (repo.fork) {
+                continue;
+            }
+
             String branch_url = repo.branches_url.substring(0, repo.branches_url.lastIndexOf("{"));
             GitHubBranch[] branches = restTemplate.getForObject(branch_url, GitHubBranch[].class);
 
