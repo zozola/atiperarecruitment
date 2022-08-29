@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.*;
 
@@ -20,13 +21,36 @@ public class Controller {
         return "[{\"test\" : \"test\"}]";
     }
 
-    @GetMapping(value = "/show", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Object> getRepositories() {
-        String url = "http://localhost:8080/test";
+    @GetMapping(value = "/show/{user}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ResultData> getRepositories(@PathVariable String user) {
+        String url = String.format("https://api.github.com/users/%s/repos", user);
         RestTemplate restTemplate = new RestTemplate();
 
-        Object[] repositories = restTemplate.getForObject(url, Object[].class);
+        GitHubRepo[] repositories = restTemplate.getForObject(url, GitHubRepo[].class);
 
-        return Arrays.asList(repositories);
+	ArrayList<ResultData> result = new ArrayList<ResultData>();
+
+	for (GitHubRepo repo : repositories) {
+            String branch_url = repo.branches_url.substring(0, repo.branches_url.lastIndexOf("{"));
+            GitHubBranch[] branches = restTemplate.getForObject(branch_url, GitHubBranch[].class);
+
+            ResultData element = new ResultData();
+
+            element.name = repo.name;
+            element.owner = repo.owner.login;
+
+            for (GitHubBranch branch : branches) {
+                ResultBranch result_branch = new ResultBranch();
+
+                result_branch.name = branch.name;                
+                result_branch.sha = branch.commit.sha;
+
+                element.branches.add(result_branch);
+            }
+
+            result.add(element);
+	}
+
+        return result;
     }
 } 
